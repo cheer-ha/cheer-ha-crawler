@@ -63,6 +63,13 @@ dependencies {
 
 	//quartz(scheduler)
 	implementation("org.springframework.boot:spring-boot-starter-quartz")
+
+	//normalization
+	implementation("com.squareup.okhttp3:okhttp:4.10.0")
+	implementation("org.json:json:20230227")
+
+	//dotenv
+	implementation("io.github.cdimascio:dotenv-kotlin:6.4.1")
 }
 
 kotlin {

@@ -9,7 +9,6 @@ import org.openqa.selenium.support.ui.Select
 import org.openqa.selenium.support.ui.WebDriverWait
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
-import java.time.ZonedDateTime
 import java.time.format.DateTimeFormatter
 import java.time.Duration
 import java.time.LocalDate
@@ -148,20 +147,19 @@ class JobKoreaCrawler(
                     }.getOrNull()
 
                     //채용공고 저장
-                    val jobOpening = JobOpening(
-                        title = title,
-                        company = company,
-                        location = location,
-                        salary = salary,
-                        employmentType = employmentType,
-                        jobOpeningUrl = link,
-                        hiringStartAt = hiringStartAt,
-                        hiringEndAt = hiringEndAt,
-                        educationLevel = educationLevel,
-                        position = position,
-                        maxExperienceYears = experienceYears + 3,
-                        minExperienceYears = experienceYears,
-                        createdAt = ZonedDateTime.now()
+                    val jobOpening = JobOpening.toEntity(
+                        title,
+                        company,
+                        location,
+                        salary,
+                        employmentType,
+                        educationLevel,
+                        link,
+                        experienceYears + 3,
+                        experienceYears,
+                        position,
+                        hiringStartAt,
+                        hiringEndAt,
                     )
                     jobOpeningRepository.save(jobOpening)
 
