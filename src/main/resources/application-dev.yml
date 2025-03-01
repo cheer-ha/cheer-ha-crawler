@@ -1,0 +1,31 @@
+spring:
+  config:
+    import: optional:file:.env[.properties]  # .env 파일 로드
+  datasource:
+    url: jdbc:mysql://localhost:${DB_PORT}/${DB_NAME}
+    username: ${DB_DEVUSER}
+    password: ${DB_DEVPASS}
+    driver-class-name: com.mysql.cj.jdbc.Driver
+  jpa:
+    hibernate:
+      ddl-auto: update
+    properties:
+      hibernate:
+        dialect: org.hibernate.dialect.MySQL8Dialect
+    open-in-view: false
+
+  data:
+    redis:
+      port: ${REDIS_PORT}
+      host: localhost
+      database: ${REDIS_DATABASE}
+
+logging:
+  level:
+    tracer: TRACE
+    org:
+      hibernate:
+        SQL: debug
+        orm:
+          jdbc:
+            bind: trace
