@@ -1,12 +1,9 @@
 package com.cheerha.crawler.crawler
 
 import com.cheerha.crawler.jobopening.*
-import io.github.bonigarcia.wdm.WebDriverManager
 import org.jsoup.Jsoup
 import org.jsoup.nodes.Document
 import org.openqa.selenium.By
-import org.openqa.selenium.chrome.ChromeDriver
-import org.openqa.selenium.chrome.ChromeOptions
 import org.openqa.selenium.support.ui.ExpectedConditions
 import org.openqa.selenium.support.ui.Select
 import org.openqa.selenium.support.ui.WebDriverWait
@@ -20,27 +17,16 @@ import java.time.ZoneId
 import kotlin.random.Random
 
 @Service
-class CrawlerService(
+class JobKoreaCrawler(
     private val jobOpeningRepository: JobOpeningRepository,
     private val keywordRepository: KeywordRepository,
-    private val jobOpeningKeywordRepository: JobOpeningKeywordRepository
-) {
+    private val jobOpeningKeywordRepository: JobOpeningKeywordRepository,
+    private val webDriverFactory: WebDriverFactory
+) : Crawler {
 
     @Transactional
-    fun jobKoreaCrawler(maxPages: Int) {
-        System.setProperty("webdriver.chrome.driver", "/opt/homebrew/bin/chromedriver")
-
-        val options = ChromeOptions()
-        options.addArguments("--start-maximized") //브라우저 전체 화면 표시
-        options.addArguments("--disable-gpu", "--window-size=1920,1080")
-        options.addArguments("--remote-allow-origins=*")  //웹소켓 차단 방지
-        options.addArguments("--disable-dev-shm-usage", "--no-sandbox")  //리소스 제한 해결
-        options.addArguments("--disable-blink-features=AutomationControlled")  //봇 탐지 우회
-        options.addArguments("--disable-features=NetworkService")  //웹소켓 연결 문제 해결
-        options.addArguments("--remote-debugging-port=9222")  //웹소켓 디버깅 활성화
-
-        WebDriverManager.chromedriver().setup()
-        val driver = ChromeDriver(options)
+    override fun crawl(maxPages: Int) {
+        val driver = webDriverFactory.createDriver()
 
         var currentPage = 1
 
