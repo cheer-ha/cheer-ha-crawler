@@ -42,7 +42,11 @@ class CrawlerService(
         WebDriverManager.chromedriver().setup()
         val driver = ChromeDriver(options)
 
-        driver.get("https://www.jobkorea.co.kr/recruit/joblist?menucode=local&localorder=1")
+        var currentPage = 1
+
+        //현재 페이지 URL 설정
+        val pageUrl = "https://www.jobkorea.co.kr/recruit/joblist?menucode=search#anchorGICnt_$currentPage"
+        driver.get(pageUrl)
 
         try {
             //첫 페이지 로딩 대기 (5초)
@@ -87,16 +91,23 @@ class CrawlerService(
             select.selectByValue("3") //최신업데이트순 value="3"
             Thread.sleep(3000) //UI 대기 (3초)
 
-
-            var currentPage = 1
             while (currentPage <= maxPages) {
+                val pageUrl = "https://www.jobkorea.co.kr/recruit/joblist?menucode=search#anchorGICnt_$currentPage"
+                driver.get(pageUrl)
                 println("현재 페이지: $currentPage")
 
-                //검색결과 페이지 로드 대기
-                WebDriverWait(driver, Duration.ofSeconds(5)).until(ExpectedConditions.presenceOfElementLocated(By.cssSelector("strong a.link.normalLog")))
+                //페이지 로딩 대기
+                WebDriverWait(driver, Duration.ofSeconds(5)).until(
+                    ExpectedConditions.presenceOfElementLocated(By.cssSelector("strong a.link.normalLog"))
+                )
 
-                //해당 페이지의 채용공고 크롤링
-                val jobListings = driver.findElements(By.cssSelector("strong a.link.normalLog"))
+                //해당 페이지의 채용공고 크롤링 (기본 정렬 개수인 40개만 가져옴)
+                val jobListings = driver.findElements(By.cssSelector("strong a.link.normalLog")).take(40)
+                if (jobListings.isEmpty()) {
+                    println("채용공고를 찾을 수 없으므로 크롤링 종료")
+                    break
+                }
+
                 for (job in jobListings) {
                     val title = job.text
                     val link = job.getAttribute("href")
@@ -182,17 +193,7 @@ class CrawlerService(
                     }
                     println("DB 저장 완료: $title ($company), 스킬: $skills")
                 }
-
-                //다음 페이지로 이동
-                val nextPage = driver.findElements(By.cssSelector(".tplPagination .next"))
-                if (nextPage.isNotEmpty() && nextPage[0].isDisplayed) {
-                    nextPage[0].click()
-                    Thread.sleep(2000)  // 페이지 로드 대기
-                    currentPage++
-                } else {
-                    println("다음 페이지 없음: 크롤링 종료")
-                    break
-                }
+                currentPage++
             }
 
         } catch (e: Exception) {
