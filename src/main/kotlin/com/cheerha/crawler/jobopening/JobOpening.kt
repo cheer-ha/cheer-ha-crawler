@@ -1,7 +1,6 @@
 package com.cheerha.crawler.jobopening
 
 import com.cheerha.crawler.normalization.AIHelper
-import com.cheerha.crawler.normalization.SalaryNormalizer
 import jakarta.persistence.*
 import org.springframework.data.jpa.domain.support.AuditingEntityListener
 import java.time.ZonedDateTime
@@ -71,15 +70,14 @@ data class JobOpening(
         ): JobOpening {
             val normalizedCompany = AIHelper.normalizeText(company, "회사명이야. 주식회사를 나타내는 (주) 같은 건 빼줘. 굳이 한글화 할 필요는 없어. 영어면 영어 그대로 써줘")
             val normalizedLocation = AIHelper.normalizeText(location, "지역명이야. 쉼표로 단어를 분리해줘.")
-            val normalizedSalary = SalaryNormalizer.normalizeSalary(salary)
-            val normalizedEmploymentType = AIHelper.normalizeText(employmentType, "고용 형태야. '정규직, 계약직, 아르바이트, 인턴, 프리랜서' 중 한 단어로만 나타내줘")
-            val normalizedEducationLevel = AIHelper.normalizeText(educationLevel, "학력이야. '무관, 고졸, 전문학사, 학사, 석사, 박사' 중 한 단어로만 나타내줘")
+            val normalizedEmploymentType = AIHelper.normalizeText(employmentType, "고용 형태야. '정규직, 계약직, 아르바이트, 인턴, 프리랜서' 중 한 단어로만 나타내줘.")
+            val normalizedEducationLevel = AIHelper.normalizeText(educationLevel, "학력이야. '무관, 고졸, 전문학사, 학사, 석사, 박사' 중 한 단어로만 나타내줘.")
 
             return JobOpening(
                 title = title,
                 company = normalizedCompany,
                 location = normalizedLocation,
-                salary = normalizedSalary,
+                salary = salary,
                 employmentType = normalizedEmploymentType,
                 educationLevel = normalizedEducationLevel,
                 jobOpeningUrl = jobOpeningUrl,

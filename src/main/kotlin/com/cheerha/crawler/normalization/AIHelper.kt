@@ -15,9 +15,10 @@ object AIHelper {
         val client = OkHttpClient()
 
         val json = JSONObject()
-        json.put("model", "gpt-3.5-turbo")
+        json.put("model", "gpt-4o-mini-2024-07-18")
         json.put("messages", listOf(
-            JSONObject().put("role", "system").put("content", "데이터 정규화 작업을 도와줘. 출력: output: 같은 단어로 너의 응답결과를 나타내줄 필요는 없어. 그냥 딱 '단어' 로만 응답해줘"),
+            JSONObject().put("role", "system").put("content",
+                "데이터 정규화 작업을 도와줘. 'output:' 같은 단어를 절대 포함하지 마. 그냥 결과만 출력해. 다른 불필요한 설명을 붙이지 마."),
             JSONObject().put("role", "user").put("content", "Task: $task. Keep it in Korean. Input: $input")
         ))
         json.put("temperature", 0.3)

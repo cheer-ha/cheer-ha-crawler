@@ -122,11 +122,19 @@ class JobKoreaCrawler(
 
                     //급여 처리 (숫자가 없으면 -1)
                     val salaryText = jobDoc.select("dt:contains(급여) + dd").text()
+
                     val salary = if (salaryText.contains(Regex("[0-9]"))) {
-                        salaryText.replace("[^0-9]".toRegex(), "").toIntOrNull() ?: 0
+                        //숫자 추출 (첫 번째 숫자만)
+                        val firstNumber = Regex("\\d{1,3}(,\\d{3})*").find(salaryText)?.value
+                            ?.replace(",", "") // 쉼표 제거
+                            ?.toIntOrNull() ?: -1
+
+                        //"연봉"이 포함되어 있으면 그대로, 아니면 12를 곱함
+                        if (salaryText.contains("연봉")) firstNumber else firstNumber * 12
                     } else {
                         -1
                     }
+
 
                     //경력 (최소 / 최대 구분, 최대 = 최소 + 3)
                     val experienceText = jobDoc.select("dt:contains(경력) + dd span.tahoma").text()
