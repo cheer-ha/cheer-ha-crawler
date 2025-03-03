@@ -5,5 +5,5 @@ import org.springframework.stereotype.Repository
 
 @Repository
 interface KeywordRepository : JpaRepository<Keyword, Long> {
-    fun findByName(name: String): Keyword?
+    fun findByNameIn(names: Collection<String>): List<Keyword>
 }
