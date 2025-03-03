@@ -69,7 +69,7 @@ data class JobOpening(
             hiringEndAt: ZonedDateTime?
         ): JobOpening {
             val normalizedCompany = AIHelper.normalizeText(company, "회사명이야. 주식회사를 나타내는 (주) 같은 건 빼줘. 굳이 한글화 할 필요는 없어. 영어면 영어 그대로 써줘")
-            val normalizedLocation = AIHelper.normalizeText(location, "지역명이야. 쉼표로 단어를 분리해줘.")
+            val normalizedLocation = AIHelper.normalizeText(location, "지역명이야. 쉼표로 단어를 분리해줘. '지도' 등 지역이름이 아닌 건 빼줘")
             val normalizedEmploymentType = AIHelper.normalizeText(employmentType, "고용 형태야. '정규직, 계약직, 아르바이트, 인턴, 프리랜서' 중 한 단어로만 나타내줘.")
             val normalizedEducationLevel = AIHelper.normalizeText(educationLevel, "학력이야. '무관, 고졸, 전문학사, 학사, 석사, 박사' 중 한 단어로만 나타내줘.")
 

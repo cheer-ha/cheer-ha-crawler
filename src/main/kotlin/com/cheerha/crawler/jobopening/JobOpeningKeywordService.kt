@@ -14,6 +14,9 @@ class JobOpeningKeywordService(
         jobOpening: JobOpening
     ) {
         for (skill in skills) {
+            if (skill == "0"){
+                return
+            }
             if (skill.isNotBlank()) {
                 val lowerSkill = skill.lowercase(Locale.getDefault())
                 val existingKeyword = keywordRepository.findByName(lowerSkill)
