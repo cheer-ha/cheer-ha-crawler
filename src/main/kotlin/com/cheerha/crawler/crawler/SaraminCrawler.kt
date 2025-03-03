@@ -142,7 +142,15 @@ class SaraminCrawler(
 
                 println("비정형 데이터: $rawKeywords")
                 //사람인은 자격요건 태그를 제공하지 않으므로 데이터 걸러내야함
-                val keywords = rawKeywords.map { AIHelper.normalizeText(it, "기술 키워드가 아닌 건 무조건 다 숫자 0으로 처리해. 기술 키워드란, mysql java python 같은 걸 뜻해") }
+                val keywords = rawKeywords.map { AIHelper.normalizeText(
+                    it,
+                    """
+                    입력된 단어가 "기술 키워드"인지 판별해. 
+                    - 기술 키워드란 프로그래밍 언어, 데이터베이스, 프레임워크, 개발 관련 도구를 의미해. 
+                    - 예시: java, python, mysql, spring, docker, kafka, aws, c++, react, typescript, postgresql, tensorflow 등
+                    - 기술 키워드가 아니면 "0"으로 변환해.
+                    """.trimIndent()
+                ) }
                 println("정형 데이터: $keywords")
 
                 jobOpeningKeywordService.saveKeywordList(keywords, jobOpening)
