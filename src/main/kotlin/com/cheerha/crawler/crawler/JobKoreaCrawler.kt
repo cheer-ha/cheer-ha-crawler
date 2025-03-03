@@ -1,5 +1,6 @@
 package com.cheerha.crawler.crawler
 
+import com.cheerha.crawler.driver.WebDriverFactory
 import com.cheerha.crawler.jobopening.*
 import org.jsoup.Jsoup
 import org.jsoup.nodes.Document
@@ -18,8 +19,7 @@ import kotlin.random.Random
 @Service
 class JobKoreaCrawler(
     private val jobOpeningRepository: JobOpeningRepository,
-    private val keywordRepository: KeywordRepository,
-    private val jobOpeningKeywordRepository: JobOpeningKeywordRepository,
+    private val jobOpeningKeywordService: JobOpeningKeywordService,
     private val webDriverFactory: WebDriverFactory
 ) : Crawler {
 
@@ -27,11 +27,9 @@ class JobKoreaCrawler(
     override fun crawl(maxPages: Int) {
         val driver = webDriverFactory.createDriver()
 
-        var currentPage = 1
-
-        //현재 페이지 URL 설정
-        val pageUrl = "https://www.jobkorea.co.kr/recruit/joblist?menucode=search#anchorGICnt_$currentPage"
-        driver.get(pageUrl)
+        //기본 페이지 url
+        val baseUrl = "https://www.jobkorea.co.kr/recruit/joblist?menucode=search#anchorGICnt_1"
+        driver.get(baseUrl)
 
         try {
             //첫 페이지 로딩 대기 (5초)
@@ -76,7 +74,7 @@ class JobKoreaCrawler(
             select.selectByValue("3") //최신업데이트순 value="3"
             Thread.sleep(3000) //UI 대기 (3초)
 
-            while (currentPage <= maxPages) {
+            for (currentPage in 1..maxPages) {
                 val pageUrl = "https://www.jobkorea.co.kr/recruit/joblist?menucode=search#anchorGICnt_$currentPage"
                 driver.get(pageUrl)
                 println("현재 페이지: $currentPage")
@@ -100,7 +98,7 @@ class JobKoreaCrawler(
 
                     //랜덤 대기 (봇 탐지 방어)
                     val randomDelay = Random.nextLong(500, 5000)
-                    println("⏳ 랜덤 대기 중: ${randomDelay / 1000}초")
+                    println("⏳ 잡코리아 랜덤 대기 중: ${randomDelay / 1000}초")
                     Thread.sleep(randomDelay)
 
                     //Jsoup 으로 상세 페이지 크롤링
@@ -108,13 +106,11 @@ class JobKoreaCrawler(
 
                     val company = jobDoc.select("span.coName").text()
 
-                    //지역 (없으면 "미확인")
-                    val locationElement = jobDoc.select("dt:contains(지역) + dd a")
-                    val location = if (locationElement.isNotEmpty()) locationElement.text() else "미확인"
+                    //지역
+                    val location = jobDoc.select("dt:contains(지역) + dd a").text()
 
                     //고용형태 (<dd> 태그 안의 모든 <li> 요소를 , 로 분리해 가져옴)
                     val employmentType = jobDoc.select("dt:contains(고용형태) + dd ul.addList li strong").eachText().joinToString(", ")
-
                     val educationLevel = jobDoc.select("dt:contains(학력) + dd").text()
 
                     //일단 포지션은 개발자로 통일
@@ -122,19 +118,12 @@ class JobKoreaCrawler(
 
                     //급여 처리 (숫자가 없으면 -1)
                     val salaryText = jobDoc.select("dt:contains(급여) + dd").text()
-
-                    val salary = if (salaryText.contains(Regex("[0-9]"))) {
-                        //숫자 추출 (첫 번째 숫자만)
-                        val firstNumber = Regex("\\d{1,3}(,\\d{3})*").find(salaryText)?.value
-                            ?.replace(",", "") // 쉼표 제거
-                            ?.toIntOrNull() ?: -1
-
-                        //"연봉"이 포함되어 있으면 그대로, 아니면 12를 곱함
+                    val firstNumber = Regex("\\d{1,3}(,\\d{3})*").find(salaryText)?.value
+                        ?.replace(",", "")
+                        ?.toIntOrNull() ?: -1
+                    val salary = if (firstNumber != -1) {
                         if (salaryText.contains("연봉")) firstNumber else firstNumber * 12
-                    } else {
-                        -1
-                    }
-
+                    } else -1
 
                     //경력 (최소 / 최대 구분, 최대 = 최소 + 3)
                     val experienceText = jobDoc.select("dt:contains(경력) + dd span.tahoma").text()
@@ -172,20 +161,9 @@ class JobKoreaCrawler(
                     jobOpeningRepository.save(jobOpening)
 
                     //스킬 키워드 추출 및 저장
-                    val skillElements = jobDoc.select("dt:contains(스킬) + dd")
-                    val skills = skillElements.text().split(",").map { it.trim() }
-
-                    for (skill in skills) {
-                        if (skill.isNotBlank()) {
-                            val existingKeyword = keywordRepository.findByName(skill)
-                            val keyword = existingKeyword ?: keywordRepository.save(Keyword(name = skill))
-
-                            jobOpeningKeywordRepository.save(JobOpeningKeyword(jobOpening = jobOpening, keyword = keyword))
-                        }
-                    }
-                    println("DB 저장 완료: $title ($company), 스킬: $skills")
+                    val skills = jobDoc.select("dt:contains(스킬) + dd").text().split(",").map { it.trim() }
+                    jobOpeningKeywordService.saveKeywordList(skills, jobOpening)
                 }
-                currentPage++
             }
 
         } catch (e: Exception) {

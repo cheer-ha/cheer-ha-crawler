@@ -1,4 +1,4 @@
-package com.cheerha.crawler.crawler
+package com.cheerha.crawler.driver
 
 import io.github.bonigarcia.wdm.WebDriverManager
 import org.openqa.selenium.WebDriver
