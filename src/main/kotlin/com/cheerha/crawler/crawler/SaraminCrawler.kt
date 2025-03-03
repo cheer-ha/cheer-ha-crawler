@@ -43,22 +43,26 @@ class SaraminCrawler(
             println("현재 페이지: $pageUrl")
 
             //해당 페이지의 채용공고 크롤링
-            val jobListings = driver.findElements(By.cssSelector(".job_tit a.str_tit"))
-            if (jobListings.isEmpty()) {
+            val jobTitElements = driver.findElements(By.cssSelector(".job_tit"))
+            if (jobTitElements.isEmpty()) {
                 println("채용공고를 찾을 수 없으므로 크롤링 종료")
                 break
             }
 
-            val jobTitles = jobListings.map {
-                it.getAttribute("title")
+            val jobTitles = jobTitElements.map { it.findElement(By.cssSelector("a.str_tit")).getAttribute("title") }
+            val jobLinks = jobTitElements.map { it.findElement(By.cssSelector("a.str_tit")).getAttribute("href") }
+
+            val jobMetaElements = driver.findElements(By.cssSelector(".job_meta"))
+            val jobKeywords = jobMetaElements.map { meta ->
+                meta.findElements(By.cssSelector("span"))
+                    .map { it.text.trim() }
+                    .filter { it.isNotEmpty() }
             }
 
-            val jobLinks = jobListings.map {
-                it.getAttribute("href")
-            }
-            for ((i) in jobListings.withIndex()) {
+            for ((i) in jobTitElements.withIndex()) {
                 val title = jobTitles[i]
                 val link = jobLinks[i]
+                val rawKeywords = jobKeywords[i]
                 println("채용공고: $title ($link)")
 
                 //랜덤 대기 (봇 탐지 방어)
@@ -105,15 +109,19 @@ class SaraminCrawler(
                 val dateFormatter = DateTimeFormatter.ofPattern("yyyy.MM.dd HH:mm")
                 val zoneId = ZoneId.of("Asia/Seoul")
 
-                val hiringStartText = driver.findElement(By.xpath("//dt[contains(text(), '시작일')]/following-sibling::dd")).text
+                val hiringStartText = driver.findElement(By.xpath("//dt[contains(text(), '시작일')]/following-sibling::dd")).text.ifEmpty { null }
                 val hiringStartAt = runCatching {
-                    LocalDateTime.parse(hiringStartText, dateFormatter).atZone(zoneId)
+                    hiringStartText?.let { LocalDateTime.parse(it, dateFormatter).atZone(zoneId) }
                 }.getOrNull()
 
-                val hiringEndText = driver.findElement(By.xpath("//dt[contains(text(), '마감일')]/following-sibling::dd")).text
-                val hiringEndAt = runCatching {
-                    LocalDateTime.parse(hiringEndText, dateFormatter).atZone(zoneId)
-                }.getOrNull()
+                //마감일이 존재하지 않을 수도 있음
+                val hiringEndElements = driver.findElements(By.xpath("//dt[contains(text(), '마감일')]/following-sibling::dd"))
+                val hiringEndText = hiringEndElements.firstOrNull()?.text?.takeIf { it.isNotEmpty() }
+                val hiringEndAt = hiringEndText?.let {
+                    runCatching {
+                        LocalDateTime.parse(it, dateFormatter).atZone(zoneId)
+                    }.getOrNull()
+                }
 
                 //채용공고 저장
                 val jobOpening = JobOpening.toEntity(
@@ -132,15 +140,14 @@ class SaraminCrawler(
                 )
                 jobOpeningRepository.save(jobOpening)
 
-//                val rawSkills = driver.findElements(By.cssSelector("div.tags ul.scroll li"))
-//                    .map { it.text.trim() }
-//                    .filter { it.isNotEmpty() }
-//
-//                //사람인은 자격요건 태그를 제공하지 않음
-//                val skills = rawSkills.map { AIHelper.normalizeText(it, "영어가 아니라면 다 숫자 0으로 처리해") }
-//                println("정형 데이터: $skills")
-//
-//                jobOpeningKeywordService.saveKeywordList(skills, jobOpening)
+                println("비정형 데이터: $rawKeywords")
+                //사람인은 자격요건 태그를 제공하지 않으므로 데이터 걸러내야함
+                val keywords = rawKeywords.map { AIHelper.normalizeText(it, "기술 키워드가 아닌 건 무조건 다 숫자 0으로 처리해. 기술 키워드란, mysql java python 같은 걸 뜻해") }
+                println("정형 데이터: $keywords")
+
+                jobOpeningKeywordService.saveKeywordList(keywords, jobOpening)
+
+                //상세페이지가 인피니티 스크롤링이라 이 로직 필수임
                 if(i == 50){
                     driver.get(baseUrl + 1)
                 }
