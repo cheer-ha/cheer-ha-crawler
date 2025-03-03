@@ -70,6 +70,9 @@ dependencies {
 
 	//dotenv
 	implementation("io.github.cdimascio:dotenv-kotlin:6.4.1")
+
+	//actuator
+	implementation("org.springframework.boot:spring-boot-starter-actuator")
 }
 
 kotlin {
