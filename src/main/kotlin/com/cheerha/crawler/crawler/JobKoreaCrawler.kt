@@ -96,6 +96,12 @@ class JobKoreaCrawler(
                     val link = job.getAttribute("href")
                     println("채용공고: $title ($link)")
 
+                    //채용공고가 이미 존재하는지 먼저 확인
+                    if (jobOpeningRepository.existsByJobOpeningUrl(link)) {
+                        println("이미 존재하는 채용공고: 건너뜀")
+                        continue
+                    }
+
                     //랜덤 대기 (봇 탐지 방어)
                     val randomDelay = Random.nextLong(500, 5000)
                     println("⏳ 잡코리아 랜덤 대기 중: ${randomDelay / 1000}초")
