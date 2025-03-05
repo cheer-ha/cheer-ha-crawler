@@ -63,7 +63,7 @@ class JobKoreaCrawler(
 
                     //Jsoup 으로 상세 페이지 크롤링
                     val jobDoc = Jsoup.connect(link).get()
-                    val data = JobKoreaData.from(jobDoc)
+                    val data = JobKoreaContentData.from(jobDoc)
 
                     //채용공고 저장
                     JobOpening.toEntity(
@@ -81,13 +81,7 @@ class JobKoreaCrawler(
                         data.hiringEndAt,
                     ).also { jobOpening ->
                         jobOpeningRepository.save(jobOpening)
-                        // 스킬 키워드 추출 및 저장
-                        jobDoc.select("dt:contains(스킬) + dd").text()
-                            .split(",")
-                            .map(String::trim)
-                            .let { skills ->
-                                jobOpeningKeywordService.saveKeywordList(skills, jobOpening)
-                            }
+                        jobOpeningKeywordService.saveKeywordList(data.skills, jobOpening)
                     }
                 }
             }

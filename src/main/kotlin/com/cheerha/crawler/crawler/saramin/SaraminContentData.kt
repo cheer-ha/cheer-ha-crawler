@@ -7,7 +7,7 @@ import java.time.ZoneId
 import java.time.ZonedDateTime
 import java.time.format.DateTimeFormatter
 
-data class SaraminData(
+data class SaraminContentData(
     val company: String,
     val location: String,
     val employmentType: String,
@@ -22,7 +22,7 @@ data class SaraminData(
         private val dateFormatter = DateTimeFormatter.ofPattern("yyyy.MM.dd HH:mm")
         private val zoneId = ZoneId.of("Asia/Seoul")
 
-        fun from(driver: WebDriver): SaraminData {
+        fun from(driver: WebDriver): SaraminContentData {
             val company = driver.findElement(By.cssSelector("a.company")).getAttribute("title")
             val location = driver.findElement(By.xpath("//dt[contains(text(), '근무지역')]/following-sibling::dd")).text
             val employmentType = driver.findElements(By.xpath("//dt[contains(text(), '근무형태')]/following-sibling::dd//strong"))
@@ -59,7 +59,7 @@ data class SaraminData(
                 runCatching { LocalDateTime.parse(it, dateFormatter).atZone(zoneId) }.getOrNull()
             }
 
-            return SaraminData(
+            return SaraminContentData(
                 company = company,
                 location = location,
                 employmentType = employmentType,

@@ -6,7 +6,7 @@ import java.time.ZoneId
 import java.time.ZonedDateTime
 import java.time.format.DateTimeFormatter
 
-data class JobKoreaData(
+data class JobKoreaContentData(
     val company: String,
     val location: String,
     val employmentType: String,
@@ -21,7 +21,7 @@ data class JobKoreaData(
         private val dateFormatter = DateTimeFormatter.ofPattern("yyyy.MM.dd")
         private val zoneId = ZoneId.of("Asia/Seoul")
 
-        fun from(jobDoc: Document): JobKoreaData {
+        fun from(jobDoc: Document): JobKoreaContentData {
             val company = jobDoc.select("span.coName").text()
             val location = jobDoc.select("dt:contains(지역) + dd a").text()
             val employmentType = jobDoc.select("dt:contains(고용형태) + dd ul.addList li strong")
@@ -59,7 +59,7 @@ data class JobKoreaData(
                 .map(String::trim)
                 .filter { it.isNotEmpty() }
 
-            return JobKoreaData(
+            return JobKoreaContentData(
                 company = company,
                 location = location,
                 employmentType = employmentType,

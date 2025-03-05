@@ -66,7 +66,7 @@ class SaraminCrawler(
                     driver.get(link)
                     Thread.sleep(2000)
 
-                    val data = SaraminData.from(driver)
+                    val data = SaraminContentData.from(driver)
                     //채용공고 저장
                     JobOpening.toEntity(
                         title = title,
