@@ -5,6 +5,7 @@ import org.openqa.selenium.WebDriver
 import org.openqa.selenium.chrome.ChromeDriver
 import org.openqa.selenium.chrome.ChromeOptions
 import org.springframework.stereotype.Component
+import java.util.*
 
 @Component
 class WebDriverFactory {
@@ -19,7 +20,8 @@ class WebDriverFactory {
         options.addArguments("--disable-dev-shm-usage", "--no-sandbox")  //리소스 제한 해결
         options.addArguments("--disable-blink-features=AutomationControlled")  //봇 탐지 우회
         options.addArguments("--disable-features=NetworkService")  //웹소켓 연결 문제 해결
-        options.addArguments("--remote-debugging-port=9222")  //웹소켓 디버깅 활성화
+        options.addArguments("--remote-debugging-port=${(9222..9299).random()}")
+        options.addArguments("--user-data-dir=/tmp/chrome-profile-${UUID.randomUUID()}")
 
         WebDriverManager.chromedriver().setup()
         return ChromeDriver(options)
