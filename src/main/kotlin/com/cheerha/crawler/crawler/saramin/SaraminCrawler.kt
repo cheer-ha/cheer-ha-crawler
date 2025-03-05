@@ -69,18 +69,18 @@ class SaraminCrawler(
                     val data = SaraminContentData.from(driver)
                     //채용공고 저장
                     JobOpening.toEntity(
-                        title = title,
-                        company = data.company,
-                        location = data.location,
-                        salary = data.salary,
-                        employmentType = data.employmentType,
-                        educationLevel = data.educationLevel,
-                        jobOpeningUrl = link,
-                        maxExperienceYears = data.maxExperienceYears,
-                        minExperienceYears = data.minExperienceYears,
-                        position = "개발자",
-                        hiringStartAt = data.hiringStartAt,
-                        hiringEndAt = data.hiringEndAt,
+                        title,
+                        data.company,
+                        data.location,
+                        data.salary,
+                        data.employmentType,
+                        data.educationLevel,
+                        link,
+                        data.maxExperienceYears,
+                        data.minExperienceYears,
+                        "개발자",
+                        data.hiringStartAt,
+                        data.hiringEndAt,
                     ).also { jobOpening ->
                         jobOpeningRepository.save(jobOpening)
                         //AIHelper를 통해 키워드 정규화 후 저장(

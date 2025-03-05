@@ -60,15 +60,15 @@ data class SaraminContentData(
             }
 
             return SaraminContentData(
-                company = company,
-                location = location,
-                employmentType = employmentType,
-                educationLevel = educationLevel,
-                salary = salary,
-                minExperienceYears = minExperience,
-                maxExperienceYears = maxExperience,
-                hiringStartAt = hiringStartAt,
-                hiringEndAt = hiringEndAt
+                company,
+                location,
+                employmentType,
+                educationLevel,
+                salary,
+                minExperience,
+                maxExperience,
+                hiringStartAt,
+                hiringEndAt
             )
         }
     }
