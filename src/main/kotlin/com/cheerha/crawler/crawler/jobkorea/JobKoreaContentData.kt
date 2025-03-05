@@ -37,8 +37,8 @@ data class JobKoreaContentData(
                 if (salaryText.contains("연봉")) firstNumber else firstNumber * 12
             } else -1
 
-            val experienceText = jobDoc.select("dt:contains(경력) + dd span.tahoma").text()
-            val experienceYears = experienceText.replace("[^0-9]".toRegex(), "").toIntOrNull() ?: 0
+            val experienceYears = jobDoc.select("dt:contains(경력) + dd span.tahoma").text()
+                .replace("[^0-9]".toRegex(), "").toIntOrNull() ?: 0
 
             val hiringStartAt = runCatching {
                 LocalDate.parse(
