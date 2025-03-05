@@ -31,19 +31,6 @@ class CrawlerController(
         return "멀티스레드 실행 완료 총 소요시간: ${totalTime}ms"
     }
 
-//    //비동기 코루틴 실행
-//    @GetMapping("/run-coroutine")
-//    suspend fun startCrawlingCoroutine(@RequestParam(defaultValue = "1") pages: Int): String {
-//        val startTime = System.currentTimeMillis()
-//        coroutineScope {
-//            crawler.forEach { crawler ->
-//                launch { crawler.crawl(pages) }
-//            }
-//        }
-//        val totalTime = System.currentTimeMillis() - startTime
-//        return "코루틴 실행 완료 총 소요시간: ${totalTime}ms"
-//    }
-
     @Async
     fun asyncCrawl(crawler: Crawler, pages: Int): CompletableFuture<Void> {
         return CompletableFuture.runAsync {
