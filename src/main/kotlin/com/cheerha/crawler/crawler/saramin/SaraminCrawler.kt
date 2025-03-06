@@ -88,8 +88,8 @@ class SaraminCrawler(
                             AIHelper.normalizeText(
                                 keyword,
                                 """
-                                입력된 단어가 "기술 키워드"인지 판별해. 
-                                - 기술 키워드란 프로그래밍 언어, 데이터베이스, 프레임워크, 개발 관련 도구를 의미해. 
+                                입력된 단어가 "기술 키워드"인지 판별해.
+                                - 기술 키워드란 프로그래밍 언어, 데이터베이스, 프레임워크, 개발 관련 도구를 의미해.
                                 - 예시: java, python, mysql, spring, docker, kafka, aws, c++, react, typescript, postgresql, tensorflow 등
                                 - 기술 키워드가 아니면 "0"으로 변환해.
                                 """.trimIndent()
