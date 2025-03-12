@@ -72,8 +72,16 @@ data class JobOpening(
             val normalizedLocation = AIHelper.normalizeText(location, "지역명이야. 쉼표로 단어를 분리해줘. '지도' 등 지역이름이 아닌 건 빼줘")
             val normalizedEmploymentType = AIHelper.normalizeText(employmentType, "고용 형태야. '정규직, 계약직, 아르바이트, 인턴, 프리랜서' 중 한 단어로만 나타내줘.")
             val normalizedEducationLevel = AIHelper.normalizeText(educationLevel, "학력이야. '무관, 고졸, 전문학사, 학사, 석사, 박사' 중 한 단어로만 나타내줘.")
-            val normalizedPosition = AIHelper.normalizeText(position, "포지션이야. $title 을 이용해서, '백엔드 개발자, 프론트엔드 개발자, 개발자' 중 한 단어로만 나타내줘.")
-
+            val normalizedPosition = AIHelper.normalizeText(
+                position,
+                """
+                    포지션을 정규화해줘. 다음 규칙을 따라줘:
+                    1. 'Back'이나 '백엔드'가 포함되면 '백엔드 개발자'라고 출력해.
+                    2. 'Front'나 '프론트'가 포함되면 '프론트엔드 개발자'라고 출력해.
+                    3. 위 두 가지 경우가 아니면 '개발자'라고 출력해.
+                    반드시 '백엔드 개발자', '프론트엔드 개발자', '개발자' 중 하나만 반환해.
+                    """
+            )
             return JobOpening(
                 title = title,
                 company = normalizedCompany,
