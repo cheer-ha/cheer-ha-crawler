@@ -8,9 +8,12 @@ import com.cheerha.crawler.jobopening.JobOpeningRepository
 import com.cheerha.crawler.normalization.AIHelper
 import org.openqa.selenium.By
 import org.openqa.selenium.WebDriver
+import org.slf4j.Logger
+import org.slf4j.LoggerFactory
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Propagation
 import org.springframework.transaction.annotation.Transactional
+
 import kotlin.random.Random
 
 @Service
@@ -19,6 +22,10 @@ class SaraminCrawler(
     private val jobOpeningKeywordService: JobOpeningKeywordService,
     private val webDriverFactory: WebDriverFactory
 ) : Crawler {
+
+    companion object {
+        private val log: Logger = LoggerFactory.getLogger(SaraminCrawler::class.java)
+    }
 
     @Transactional
     override fun crawl(maxPages: Int) {
@@ -29,9 +36,9 @@ class SaraminCrawler(
                 //각 페이지마다 새로운 트랜잭션으로 처리
                 processPage(currentPage, baseUrl, driver)
             }
-            println("크롤링 완료")
+            log.info("크롤링 완료")
         } catch (e: Exception) {
-            println("크롤링 중 오류 발생: ${e.message}")
+            log.error("크롤링 중 오류 발생: ${e.message}")
         } finally {
             driver.quit()
         }
@@ -42,11 +49,11 @@ class SaraminCrawler(
         val pageUrl = "$baseUrl$currentPage"
         driver.get(pageUrl)
         SaraminScroller.toBottom(driver)
-        println("현재 페이지: $pageUrl")
+        log.info("현재 페이지: $pageUrl")
 
         val jobTitElements = driver.findElements(By.cssSelector(".job_tit"))
         if (jobTitElements.isEmpty()) {
-            println("채용공고를 찾을 수 없으므로 크롤링 종료")
+            log.warn("채용공고를 찾을 수 없으므로 크롤링 종료")
             return
         }
 
@@ -75,15 +82,15 @@ class SaraminCrawler(
         val title = jobTitles[i]
         val link = jobLinks[i]
         val rawKeywords = jobKeywords.getOrElse(i) { emptyList() }
-        println("채용공고: $title ($link)")
+        log.info("채용공고: $title ($link)")
 
         if (jobOpeningRepository.existsByJobOpeningUrl(link)) {
-            println("이미 존재하는 채용공고: 건너뜀")
+            log.info("이미 존재하는 채용공고: 건너뜀")
             return
         }
 
         Random.nextLong(500, 5000).also { delay ->
-            println("⏳ 사람인 랜덤 대기 중: ${delay / 1000}초")
+            log.info("⏳ 사람인 랜덤 대기 중: ${delay / 1000}초")
             Thread.sleep(delay)
         }
 
@@ -118,7 +125,7 @@ class SaraminCrawler(
                     """.trimIndent()
                 )
             }
-            println("정형 데이터: $normalizedKeywords")
+            log.info("정형 데이터: $normalizedKeywords")
             jobOpeningKeywordService.saveKeywordList(normalizedKeywords, jobOpening)
         }
 
